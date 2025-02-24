@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Nimbus";
+  src: url("/fonts/NimbusRomNo9L-Med.otf") format("otf"),
+    url("/fonts/NimbusRomNo9L-MedIta.otf") format("otf"),
+    url("/fonts/NimbusRomNo9L-Reg.otf") format("otf"),
+    url("/fonts/NimbusRomNo9L-RegIta.otf") format("otf");
+  font-style: normal;
+  font-weight: normal;
+}
+
+body {
+  color: #fafafa;
+  background: #121212;
+  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-image: url("/Optopus_Background.png");
+  background-size: cover;
+  background-repeat: repeat;
+  min-height: 100vh;
+}
+
+html {
+  scrollbar-gutter: auto !important;
+}
+
+.page-container {
+  @apply py-6 px-2 sm:px-4 md:px-6;
+}
+
+.navlink {
+  @apply btn btn-ghost normal-case text-lg;
+}
+
+.navlink-active {
+  @apply text-white font-bold;
+}
+
+.field-title {
+  @apply font-medium text-lg;
+}
+
+.field-subtitle {
+  @apply text-gray-500 text-sm;
+}
+
+.empty-box {
+  @apply px-6 py-8 border-2 border-dashed border-secondary space-y-2 text-center w-fit justify-self-center rounded-md;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background-color: transparent;
+  border: none;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background-color: transparent;
+  border: none;
+}
+
+input[type="range"]::-ms-thumb {
+  width: 24px;
+  height: 24px;
+  background-color: transparent;
+  border: none;
+}
+
+.react-datepicker-wrapper {
+  width: 100% !important;
+}
+.react-datepicker__input-container {
+  width: 100% !important;
+}
+
+.offer-item {
+  @apply flex flex-col gap-2 rounded-md p-4 border-2 border-primary;
+
+  transition-property: box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 250ms;
+}
+
+.glass-bg {
+  @apply bg-[#1E1E1E20];
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.offer-item:hover {
+  box-shadow: 0 0 15px #6b46c1;
+}
+
+.slider-label {
+  @apply text-sm font-medium text-gray-100;
+}
