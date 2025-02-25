@@ -1,6 +1,6 @@
 import { gql } from "graphql-request";
 
-// GET OFFERS
+// GET OPTIONS
 export const getOptionsQuery = gql`
   query GetOptions {
     options(first: 1000, orderDirection: asc) {

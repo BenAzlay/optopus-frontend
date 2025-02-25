@@ -1,38 +1,14 @@
 # Optopus
 
-Optopus is a decentralized application (dApp) that introduces options to the cryptocurrency space, enabling users to buy tokens with the flexibility to return them and get their money back. This innovative approach empowers users to better manage their financial exposure and risk within the DeFi ecosystem.
+Optopus is a decentralized application (dApp) that introduces European style put and call options to crypto, using Uniswap V3 LP NFTs as collateral.
 
 ---
-
-## Features
-
-- **Options Functionality**: Buy tokens with the assurance of returning them for collateral.
-- **Flexibility**: Empower users to reclaim collateral under specific conditions.
-- **Transparency**: Built on Ethereum's Base Layer to ensure trust and security.
 
 ### Smart Contract Address
 
 The Optopus protocol is deployed on the Base network with the following address:
 
-**`0x0bBEeEab55594F1A03A2b34A6e454fb1d85519e4`**
-
-### Live DApp
-
-Access the live dApp here: [Optopus](https://optopus.com/)
-
----
-
-## Installation and Running Locally
-
-Follow the steps below to set up the project locally:
-
-### Prerequisites
-
-Ensure you have the following installed:
-
-- [Node.js](https://nodejs.org/) (version 16 or higher)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-- [Git](https://git-scm.com/)
+**`0x757ecfd6a28a3076d4e80cdcbb29e96788d08203`**
 
 ### Clone the Repository
 
@@ -115,17 +91,6 @@ $ yarn lint
 - **Smart Contract**: Solidity
 - **Network**: Base (Ethereum Layer 2)
 - **GraphQL Subgraph**: Custom integration
-
----
-
-## Smart Contract Details
-
-Optopus’s smart contract is deployed on the Base network and supports the following operations:
-
-- **Create Offer**: Establish a new option offer.
-- **Buy Tokens**: Participate in an offer by purchasing tokens.
-- **Return Tokens**: Redeem collateral by returning purchased tokens.
-- **Claim Fees**: Collect fees accrued from offers.
 
 ---
 

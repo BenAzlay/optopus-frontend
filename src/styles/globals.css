@@ -84,7 +84,7 @@ input[type="range"]::-ms-thumb {
   width: 100% !important;
 }
 
-.offer-item {
+.option-item {
   @apply flex flex-col gap-2 rounded-md p-4 border-2 border-primary;
 
   transition-property: box-shadow;
@@ -98,7 +98,7 @@ input[type="range"]::-ms-thumb {
   -webkit-backdrop-filter: blur(12px);
 }
 
-.offer-item:hover {
+.option-item:hover {
   box-shadow: 0 0 15px #6b46c1;
 }
 
