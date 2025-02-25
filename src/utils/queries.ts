@@ -7,6 +7,7 @@ export const getOptionsQuery = gql`
       id
       owner
       tokenId
+      asset
       token0
       exercisedAmount
       expiry
@@ -23,7 +24,10 @@ export interface Option {
   id: string;
   owner: string;
   tokenId: string;
+  asset: string;
   token0: string;
+  amount0: number;
+  amount1: number;
   exercisedAmount: number;
   expiry: number;
   isCall: boolean;

@@ -71,7 +71,7 @@ const Navbar: React.FC = () => {
             {/* Logo */}
             <div className="text-primary font-nimbus  text-4xl sm:text-3xl font-bold">
               <span className="hidden md:inline">Optopus</span>
-              <span className="md:hidden">R</span>
+              <span className="md:hidden">O</span>
             </div>
 
             {/* Navlinks */}

@@ -2,208 +2,110 @@
 
 import useStore from "@/store/useStore";
 import { Fragment, useMemo, useRef, useState } from "react";
-import {
-  useAsyncEffect,
-  useVisibilityIntervalEffect,
-} from "@/utils/customHooks";
-import { Deposit, Offer as SubgraphOffer } from "@/utils/queries";
-import { ethers } from "ethers";
+import { useVisibilityIntervalEffect } from "@/utils/customHooks";
+import { Option as SubgraphOption } from "@/utils/queries";
 import ERC20Token from "./types/ERC20Token";
-import Decimal from "decimal.js";
-import {
-  abbreviateAmount,
-  calculateCollateralPerOneSoldToken,
-  compareEthereumAddresses,
-} from "@/utils/utilFunc";
+import { compareEthereumAddresses } from "@/utils/utilFunc";
 import TokenSymbolAndLogo from "@/components/TokenSymbolAndLogo";
 import { getTokenDetails } from "@/utils/tokenMethods";
 import Link from "next/link";
-import { useAccount } from "wagmi";
 import dynamic from "next/dynamic";
-import Offer from "./types/Offer";
+import Option from "./types/Option";
 import FiltersDropdown from "@/components/FiltersDropdown";
 
 interface SortingOption {
-  id: keyof Offer;
+  id: keyof Option;
   label: string;
   asc: boolean; // ascending or descending
 }
 
-const OfferItem = dynamic(() => import("@/components/OfferItem"), {
+const OptionItem = dynamic(() => import("@/components/OptionItem"), {
   loading: () => (
-    <div className="offer-item min-h-64 items-center justify-center">
-      <p>Loading offer...</p>
+    <div className="option-item min-h-64 items-center justify-center">
+      <p>Loading option...</p>
     </div>
   ),
 });
 
 function App() {
-  const offersHaveLoaded = useRef(false);
-  const { setOffers, offers, setDeposits, deposits } = useStore();
-  const { address: connectedAddress } = useAccount();
+  const optionsHaveLoaded = useRef(false);
+  const { setOptions, options } = useStore();
 
-  // Fetch offers every 60s from subgraph
-  const fetchOffers = async () => {
+  // Fetch options every 60s from subgraph
+  const fetchOptions = async () => {
     try {
-      // Fetch offers from subgraph
-      const response = await fetch("/api/fetchOffers");
+      // Fetch options from subgraph
+      const response = await fetch("/api/fetchOptions");
       if (!response.ok) {
-        throw new Error("Failed to fetch offers");
+        throw new Error("Failed to fetch options");
       }
-      const { offers: subgraphOffers } = (await response.json()) as {
-        offers: SubgraphOffer[];
+      const { options: subgraphOptions } = (await response.json()) as {
+        options: SubgraphOption[];
       };
-      // Isolate the offers tokens to convert them to ERC20Token type
-      const tokenAddresses = subgraphOffers.flatMap((offer) => [
-        offer.soldToken.id,
-        offer.collateralToken.id,
+      // Isolate the options tokens to convert them to ERC20Token type
+      const tokenAddresses = subgraphOptions.flatMap((option) => [
+        option.asset,
+        option.token0,
+        option.token1,
       ]);
       const tokensWithDetails = await getTokenDetails(tokenAddresses);
-      const offers = subgraphOffers
-        .map((offer: SubgraphOffer) => {
+      const options = subgraphOptions
+        .map((option: SubgraphOption) => {
           // Convert tokens into ERC20Token type
-          const soldToken = tokensWithDetails.find((token) =>
-            compareEthereumAddresses(token.address, offer.soldToken.id)
+          const token0 = tokensWithDetails.find((token) =>
+            compareEthereumAddresses(token.address, option.token0)
           )!;
-          const collateralToken = tokensWithDetails.find((token) =>
-            compareEthereumAddresses(token.address, offer.collateralToken.id)
+          const token1 = tokensWithDetails.find((token) =>
+            compareEthereumAddresses(token.address, option.token1)
           )!;
-          // Collateral per sold token from exchange rate and decimals
-          const collateralPerSoldToken = calculateCollateralPerOneSoldToken(
-            offer.exchangeRate,
-            soldToken.decimals,
-            collateralToken.decimals
-          );
-          // Price per sold token from the offer (not market price)
-          const pricePerSoldToken =
-            collateralPerSoldToken * collateralToken.price;
-          // Difference between offer price and market price
-          const soldTokenMarketPriceDifference =
-            pricePerSoldToken / soldToken.price;
+          const asset = tokensWithDetails.find((token) =>
+            compareEthereumAddresses(token.address, option.asset)
+          )!;
           return {
-            ...offer,
-            creatorFeeBp: Number(offer.creatorFeeBp),
-            soldToken,
-            collateralToken,
-            collateralPerSoldToken,
-            pricePerSoldToken,
-            soldTokenMarketPriceDifference,
+            ...option,
+            asset,
+            token0,
+            token1,
           };
         })
         .filter(Boolean);
-      setOffers(offers);
-      offersHaveLoaded.current = true;
+      setOptions(options);
+      optionsHaveLoaded.current = true;
     } catch (e) {
-      console.error("fetchOffers ERROR", e);
+      console.error("fetchOptions ERROR", e);
     }
   };
-  useVisibilityIntervalEffect(fetchOffers, 60000, []); // Refetch offers every 60s
-
-  const filterTypeOptions = [
-    {
-      id: "all",
-      label: "All",
-    },
-    {
-      id: "created",
-      label: "Created",
-    },
-    {
-      id: "bought",
-      label: "Bought",
-    },
-  ];
+  useVisibilityIntervalEffect(fetchOptions, 60000, []); // Refetch options every 60s
 
   const sortingOptions: SortingOption[] = [
     {
-      id: "soldTokenMarketPriceDifference",
-      label: "Lowest Price Difference",
+      id: "expiry",
+      label: "Expiry date",
       asc: true,
     },
     {
-      id: "soldTokenMarketPriceDifference",
-      label: "Highest Price Difference",
+      id: "totalSupply",
+      label: "Total supply",
       asc: false,
-    },
-    {
-      id: "startTime",
-      label: "Earliest Start Time",
-      asc: true,
-    },
-    {
-      id: "endTime",
-      label: "Earliest End Time",
-      asc: true,
-    },
-    {
-      id: "endTime",
-      label: "Latest End Time",
-      asc: false,
-    },
-    {
-      id: "creatorFeeBp",
-      label: "Lowest User Fee",
-      asc: true,
     },
   ];
 
-  const [filterType, setFilterType] = useState<string>(filterTypeOptions[0].id); // all | created | bought
   const [tokenFilter, setTokenFilter] = useState<ERC20Token | null>(null);
   const [selectedSortingOption, setSelectedSortingOption] =
     useState<SortingOption>(sortingOptions[0]);
 
-  // An array of all tokens (sold & collateral) used in the offers
-  const offerTokens: ERC20Token[] = useMemo(() => {
+  // An array of all tokens (sold & collateral) used in the options
+  const optionTokens: ERC20Token[] = useMemo(() => {
     // Flatten the array of tokens and then create a Set to filter unique items
-    const tokens: ERC20Token[] = offers.flatMap((offer) => [
-      offer.soldToken,
-      offer.collateralToken,
+    const tokens: ERC20Token[] = options.flatMap((option) => [
+      option.token0,
+      option.token1,
     ]);
     return Array.from(new Set(tokens));
-  }, [offers]);
+  }, [options]);
 
-  const createrOffers = useMemo(
-    () =>
-      offers.filter((offer) =>
-        compareEthereumAddresses(offer.creator, connectedAddress)
-      ),
-    [offers, connectedAddress]
-  );
-
-  const boughtOffers = useMemo(
-    () =>
-      offers.filter(
-        (offer) =>
-          !!deposits.some(
-            (deposit) =>
-              deposit.offerId === offer.id &&
-              compareEthereumAddresses(deposit.participant, connectedAddress) &&
-              new Decimal(deposit.netCollateralAmount).gt(0)
-          )
-      ),
-    [offers, deposits, connectedAddress]
-  );
-
-  const filteredOffers = useMemo(
-    () =>
-      offers.filter((offer) => {
-        let matchesType: boolean;
-        if (filterType === "created") {
-          matchesType = createrOffers.some(({ id }) => id === offer.id);
-        } else if (filterType === "bought") {
-          matchesType = boughtOffers.some(({ id }) => id === offer.id);
-        } else matchesType = true;
-        const matchesToken =
-          tokenFilter === null ||
-          offer.soldToken === tokenFilter ||
-          offer.collateralToken === tokenFilter;
-        return matchesType && matchesToken;
-      }),
-    [offers, boughtOffers, createrOffers, filterType, tokenFilter]
-  );
-
-  const sortedOffers = useMemo(() => {
-    return [...filteredOffers].sort((a, b) => {
+  const sortedOptions = useMemo(() => {
+    return [...options].sort((a, b) => {
       const attributeA = a[selectedSortingOption.id];
       const attributeB = b[selectedSortingOption.id];
 
@@ -211,40 +113,7 @@ function App() {
       if (attributeA > attributeB) return selectedSortingOption.asc ? 1 : -1;
       return 0;
     });
-  }, [filteredOffers, selectedSortingOption]);
-
-  const depositsGetter = async (): Promise<Deposit[]> => {
-    try {
-      if (!ethers.isAddress(connectedAddress))
-        throw new Error("No account connected");
-      // Fetch user's deposits from subgraph
-      const response = await fetch(
-        `/api/fetchDeposits?participant=${connectedAddress}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch deposits for user");
-      }
-      const { deposits } = await response.json();
-      return deposits;
-    } catch (e) {
-      return [];
-    }
-  };
-  const depositsSetter = (_deposits: Deposit[]) => {
-    setDeposits(_deposits);
-  };
-  useAsyncEffect(depositsGetter, depositsSetter, [connectedAddress]);
-
-  const getOffersCount = (typeOption: string): number => {
-    switch (typeOption) {
-      case "created":
-        return createrOffers.length;
-      case "bought":
-        return boughtOffers.length;
-      default:
-        return offers.length;
-    }
-  };
+  }, [options, selectedSortingOption]);
 
   const handleSelectSortingOption = (option: {
     id: string;
@@ -253,7 +122,7 @@ function App() {
   }) => {
     setSelectedSortingOption({
       ...option,
-      id: option.id as keyof Offer,
+      id: option.id as keyof Option,
     });
   };
 
@@ -266,24 +135,11 @@ function App() {
           options={sortingOptions}
           onSelectOption={handleSelectSortingOption}
           selectedOption={selectedSortingOption}
-          prefix="Sort Offers by:"
+          prefix="Sort Options by:"
         />
-        <div className="join hidden sm:block">
-          {filterTypeOptions.map(({ id, label }) => (
-            <button
-              key={id}
-              className={`join-item btn btn-secondary btn-outline ${
-                filterType === id ? "btn-active" : ""
-              }`}
-              onClick={() => setFilterType(id)}
-            >
-              {label} ({abbreviateAmount(getOffersCount(id))})
-            </button>
-          ))}
-        </div>
         {/* Token Filters */}
         <div className="space-x-2 hidden lg:block">
-          {offerTokens.map((token) => (
+          {optionTokens.map((token) => (
             <button
               key={token.address}
               className={`btn btn-outline btn-secondary ${
@@ -302,20 +158,20 @@ function App() {
   );
 
   const emptyMessageBox = () => {
-    if (filteredOffers.length > 0) return null;
-    if (!offersHaveLoaded.current) {
+    if (options.length > 0) return null;
+    if (!optionsHaveLoaded.current) {
       return (
         <div className="justify-center text-center w-full py-8">
           <h6 className="font-semibold text-lg text-center inline-flex gap-2 justify-self-center">
             <span className="loading loading-spinner"></span>
-            Loading Offers...
+            Loading Options...
           </h6>
         </div>
       );
     }
     return (
       <div className="empty-box">
-        <h6 className="text-lg font-semibold">🫥 No offers found</h6>
+        <h6 className="text-lg font-semibold">🫥 No options found</h6>
         <p>
           Try changing the filters above, or{" "}
           <Link
@@ -363,7 +219,7 @@ function App() {
                     d="M12 4.5v15m7.5-7.5h-15"
                   />
                 </svg>
-                Create an Offer
+                Create an Option
               </Link>
               <Link
                 href="/claim"
@@ -392,11 +248,11 @@ function App() {
       <div className="page-container">
         {filterButtons()}
         <div
-          id="offers-grid"
+          id="options-grid"
           className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
         >
-          {sortedOffers.map((offer, index) => (
-            <OfferItem offer={offer} key={index} />
+          {sortedOptions.map((option, index) => (
+            <OptionItem option={option} key={index} />
           ))}
         </div>
         {emptyMessageBox()}

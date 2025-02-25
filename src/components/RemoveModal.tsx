@@ -2,7 +2,7 @@
 
 import { FC, useEffect, useMemo, useState } from "react";
 import Modal from "./Modal";
-import Offer from "@/app/types/Offer";
+import Offer from "@/app/types/Option";
 import { convertQuantityFromWei } from "@/utils/utilFunc";
 import CONSTANTS from "@/utils/constants";
 import TransactionButton from "./TransactionButton";
