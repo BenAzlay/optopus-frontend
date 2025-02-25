@@ -60,7 +60,6 @@ const Navbar: React.FC = () => {
   const navLinks = [
     { href: "/", label: "Buy" },
     { href: "/sell", label: "Sell" },
-    { href: "/claim", label: "Claim" },
   ];
 
   return (
