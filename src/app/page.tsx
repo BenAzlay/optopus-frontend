@@ -90,19 +90,8 @@ function App() {
     },
   ];
 
-  const [tokenFilter, setTokenFilter] = useState<ERC20Token | null>(null);
   const [selectedSortingOption, setSelectedSortingOption] =
     useState<SortingOption>(sortingOptions[0]);
-
-  // An array of all tokens (sold & collateral) used in the options
-  const optionTokens: ERC20Token[] = useMemo(() => {
-    // Flatten the array of tokens and then create a Set to filter unique items
-    const tokens: ERC20Token[] = options.flatMap((option) => [
-      option.token0,
-      option.token1,
-    ]);
-    return Array.from(new Set(tokens));
-  }, [options]);
 
   const sortedOptions = useMemo(() => {
     return [...options].sort((a, b) => {
@@ -137,22 +126,6 @@ function App() {
           selectedOption={selectedSortingOption}
           prefix="Sort Options by:"
         />
-        {/* Token Filters */}
-        <div className="space-x-2 hidden lg:block">
-          {optionTokens.map((token) => (
-            <button
-              key={token.address}
-              className={`btn btn-outline btn-secondary ${
-                tokenFilter === token ? "btn-active" : ""
-              }`}
-              onClick={() =>
-                setTokenFilter(tokenFilter === token ? null : token)
-              }
-            >
-              <TokenSymbolAndLogo symbol={token.symbol} />
-            </button>
-          ))}
-        </div>
       </div>
     </Fragment>
   );
@@ -191,16 +164,16 @@ function App() {
         <div className="hero-content text-center">
           <div className="space-y-6 justify-items-center">
             <h1 className="text-3xl sm:text-5xl font-bold font-nimbus text-primary">
-              Invest Risk-Free. Get Money Back.
+              Options for Crypto
             </h1>
             <h2 className="text-lg sm:text-xl font-semibold text-left text-gray-100">
-              🤩 Choose a token to invest in
+              🤩 Choose a put or call option
               <br />
-              😇 Return it if the price drops
+              ⏳ Exercise it 1 hour before expiry
               <br />
-              🤑 Reclaim your investment safely
+              😇 ...or don't and stay safe
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full sm:w-fit">
+            <div className="w-full sm:w-fit">
               <Link
                 href="/sell"
                 className="btn btn-outline btn-primary font-semibold text-lg"
@@ -220,26 +193,6 @@ function App() {
                   />
                 </svg>
                 Create an Option
-              </Link>
-              <Link
-                href="/claim"
-                className="btn btn-outline btn-primary font-semibold text-lg"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 3.75v16.5M2.25 12h19.5M6.375 17.25a4.875 4.875 0 0 0 4.875-4.875V12m6.375 5.25a4.875 4.875 0 0 1-4.875-4.875V12m-9 8.25h16.5a1.5 1.5 0 0 0 1.5-1.5V5.25a1.5 1.5 0 0 0-1.5-1.5H3.75a1.5 1.5 0 0 0-1.5 1.5v13.5a1.5 1.5 0 0 0 1.5 1.5Zm12.621-9.44c-1.409 1.41-4.242 1.061-4.242 1.061s-.349-2.833 1.06-4.242a2.25 2.25 0 0 1 3.182 3.182ZM10.773 7.63c1.409 1.409 1.06 4.242 1.06 4.242S9 12.22 7.592 10.811a2.25 2.25 0 1 1 3.182-3.182Z"
-                  />
-                </svg>
-                Claim Rewards
               </Link>
             </div>
           </div>
