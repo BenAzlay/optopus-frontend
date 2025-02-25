@@ -15,7 +15,6 @@ import { abi as OptopusAbi } from "@/abi/OptopusAbi";
 import { zeroAddress } from "viem";
 import {
   getApprovedPosition,
-  getPositionsApprovedForAll,
   getUniswapV3NonfungiblePositions,
 } from "@/utils/tokenMethods";
 import { useAsyncEffect, useCurrentTimestamp } from "@/utils/customHooks";
@@ -24,11 +23,8 @@ import SignInButton from "@/components/SignInButton";
 import TransactionButton from "@/components/TransactionButton";
 import { base } from "viem/chains";
 import SwitchChainButton from "@/components/SwitchChainButton";
-import RangeSlider from "@/components/RangeSlider";
-import dynamic from "next/dynamic";
 import useContractTransaction from "@/utils/useContractTransaction";
 import { useAccount } from "wagmi";
-import useIsMobile from "@/utils/useIsMobile";
 import Position from "../types/Position";
 import PositionsDropdown from "@/components/PositionsDropdown";
 import DateField from "@/components/DateField";
@@ -55,9 +51,11 @@ const Sell = () => {
   const [expiryDate, setExpiryDate] = useState<Date>(currentDate);
   const [isCall, setIsCall] = useState<boolean>(false);
   const [txError, setTxError] = useState<string | null>(null);
+  const [loadingPositions, setLoadingPositions] = useState<boolean>(false);
 
   // Fetch all user Uniswap v3 positions
   const positionsGetter = async () => {
+    setLoadingPositions(true);
     return await getUniswapV3NonfungiblePositions(connectedAddress);
   };
   const positionsSetter = (positions: Position[]) => {
@@ -69,6 +67,7 @@ const Sell = () => {
     } else {
       setSelectedPosition(null);
     }
+    setLoadingPositions(false);
   };
   useAsyncEffect(positionsGetter, positionsSetter, [connectedAddress]);
 
@@ -207,6 +206,8 @@ const Sell = () => {
       try {
         setSoldTokenAmount("");
         setStrikePrice("");
+        const newPositions = await positionsGetter();
+        positionsSetter(newPositions);
       } catch (error) {
         console.error("Error updating states", error);
       }
@@ -264,6 +265,66 @@ const Sell = () => {
     );
   };
 
+  const mintOptionForm = () => (
+    <Fragment>
+      <div className="space-y-2">
+        <div>
+          <label className="field-title">Select a Uniswap V3 NFT</label>
+          <div className="field-subtitle">
+            The underlying tokens in that LP position will be used as
+            collateral. Only positions for which both tokens are supported by
+            Optopus are shown.
+          </div>
+        </div>
+        <PositionsDropdown
+          positions={positions}
+          selectedPosition={selectedPosition}
+          onSelectPosition={(position) => setSelectedPosition(position)}
+        />
+      </div>
+      <div className="space-y-2">
+        <label className="field-title">What do you want to sell?</label>
+        <TokenAmountField
+          amount={soldTokenAmount}
+          onChangeAmount={(amount) => setSoldTokenAmount(amount)}
+          showTokenBalance={true}
+          tokenBalance={maxSoldToken}
+          balanceLabel="Max"
+          placeholder="Sold amount"
+          tokenPrice={soldToken?.price ?? 0}
+          balanceIsLoading={false}
+          tokenComponent={
+            <TokensDropdown
+              tokens={tokensList}
+              selectedToken={soldToken}
+              onSelectToken={handleSoldTokenChange}
+            />
+          }
+        />
+      </div>
+      <div className="space-y-2">
+        <label className="field-title">Strike price ($)</label>
+        <NumberField
+          value={strikePrice}
+          onChangeValue={(price) => setStrikePrice(price)}
+        />
+      </div>
+
+      {/* Dates */}
+      <div className="space-y-2">
+        <label className="field-title">Expiry date</label>
+        <DateField
+          onSelectDate={onChangeExpiryDate}
+          selectedDate={expiryDate}
+          minDate={currentDate}
+        />
+      </div>
+
+      <ToggleCallPut value={isCall} onChange={(bool) => setIsCall(bool)} />
+      {formErrors.length > 0 ? errorsBox() : null}
+    </Fragment>
+  );
+
   return (
     <div className="flex flex-col gap-2 items-center py-6 w-full overflow-hidden">
       <h1 className="text-2xl font-bold mb-4 text-center w-full">
@@ -273,61 +334,17 @@ const Sell = () => {
         id="form"
         className="space-y-4 max-w-lg border-2 rounded-md border-primary p-2 sm:p-4 w-full overflow-hidden glass-bg"
       >
-        <div className="space-y-2">
-          <div>
-            <label className="field-title">Select a Uniswap V3 NFT</label>
-            <div className="field-subtitle">
-              The underlying tokens in that LP position will be used as
-              collateral. Only positions for which both tokens are supported by
-              Optopus are shown.
-            </div>
-          </div>
-          <PositionsDropdown
-            positions={positions}
-            selectedPosition={selectedPosition}
-            onSelectPosition={(position) => setSelectedPosition(position)}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="field-title">What do you want to sell?</label>
-          <TokenAmountField
-            amount={soldTokenAmount}
-            onChangeAmount={(amount) => setSoldTokenAmount(amount)}
-            showTokenBalance={true}
-            tokenBalance={maxSoldToken}
-            balanceLabel="Max"
-            placeholder="Sold amount"
-            tokenPrice={soldToken?.price ?? 0}
-            balanceIsLoading={false}
-            tokenComponent={
-              <TokensDropdown
-                tokens={tokensList}
-                selectedToken={soldToken}
-                onSelectToken={handleSoldTokenChange}
-              />
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="field-title">Strike price ($)</label>
-          <NumberField
-            value={strikePrice}
-            onChangeValue={(price) => setStrikePrice(price)}
-          />
-        </div>
-
-        {/* Dates */}
-        <div className="space-y-2">
-          <label className="field-title">Expiry date</label>
-          <DateField
-            onSelectDate={onChangeExpiryDate}
-            selectedDate={expiryDate}
-            minDate={currentDate}
-          />
-        </div>
-
-        <ToggleCallPut value={isCall} onChange={(bool) => setIsCall(bool)} />
-        {formErrors.length > 0 ? errorsBox() : null}
+        {!connectedAddress ? (
+          <p className="text-center">Connect your wallet to create an option</p>
+        ) : loadingPositions ? (
+          <p className="text-center">Loading your Uniswap V3 LP NFTs...</p>
+        ) : !positions.length ? (
+          <p className="text-center">
+            You have no Uniswap V3 LP NFT with supported tokens (WETH + USDC)
+          </p>
+        ) : (
+          mintOptionForm()
+        )}
         {/* Submit */}
         {transactionButton()}
       </div>
