@@ -19,10 +19,6 @@ body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  background-image: url("/Optopus_Background.png");
-  background-size: cover;
-  background-repeat: repeat;
   min-height: 100vh;
 }
 

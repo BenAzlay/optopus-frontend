@@ -24,14 +24,6 @@ export const metadata: Metadata = {
     url: "https://optopus.com",
     siteName: "Optopus",
     type: "website",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Optopus platform for crypto options",
-      },
-    ],
     locale: "en_US",
   },
   twitter: {
@@ -40,7 +32,6 @@ export const metadata: Metadata = {
     title: "Optopus | Options for Crypto",
     description:
       "Invest in Tokens Risk-Free. Return it anytime. Get Money Back.",
-    images: ["/og-image.png"],
   },
   robots: "index, follow",
   icons: {
