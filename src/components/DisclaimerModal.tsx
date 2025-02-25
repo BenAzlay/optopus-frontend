@@ -9,7 +9,7 @@ const DisclaimerModal = ({ onAccept }: { onAccept: () => void }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="modal-box max-w-2xl p-6 bg-base-200 rounded-lg shadow-lg">
         <h2 className="text-xl font-bold text-primary">
-          🚨 Important Notice for Optopuss
+          🚨 Important Notice for Optopuses
         </h2>
 
         <p className="mt-3 text-gray-300">
@@ -47,7 +47,7 @@ const DisclaimerModal = ({ onAccept }: { onAccept: () => void }) => {
           <li>
             🛠 <strong>Check our smart contract:</strong>{" "}
             <a
-              href="https://basescan.org/address/0x0bBEeEab55594F1A03A2b34A6e454fb1d85519e4"
+              href="https://basescan.org/address/0x757ecfd6a28a3076d4e80cdcbb29e96788d08203"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-400 underline"
