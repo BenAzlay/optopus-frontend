@@ -171,7 +171,7 @@ function App() {
               <br />
               ⏳ Exercise it 1 hour before expiry
               <br />
-              😇 ...or don't and stay safe
+              😇 ...or don&apos;t and stay safe
             </h2>
             <div className="w-full sm:w-fit">
               <Link
